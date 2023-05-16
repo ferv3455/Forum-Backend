@@ -28,8 +28,8 @@ class Post(models.Model):
     createdAt = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
 
-    images = models.ManyToManyField(Image, null=True, blank=True)
-    tags = models.ManyToManyField(Tag, null=True, blank=True)
+    images = models.ManyToManyField(Image, blank=True)
+    tags = models.ManyToManyField(Tag, blank=True)
 
     likes = models.IntegerField(default=0)
     favorites = models.IntegerField(default=0)

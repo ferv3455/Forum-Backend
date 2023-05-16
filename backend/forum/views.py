@@ -19,7 +19,14 @@ class PostListView(APIView):
 
     def get(self, request, format=None):
         # Get all posts
-        query_results = Post.objects.all()
+        sort_by = request.GET.get('sortBy', 'time')
+        if sort_by == 'hot':
+            query_results = Post.objects.all().order_by('-comments')
+        elif sort_by == 'following':
+            query_results = Post.objects.all().order_by('-likes')
+        else:
+            query_results = Post.objects.all().order_by('-createdAt')
+
         return Response(PostSerializer(query_results, many=True).data,
                         status=status.HTTP_200_OK)
 
@@ -27,8 +34,9 @@ class PostListView(APIView):
         # Add a new post
         data = request.data
         try:
-            # user = User.objects.create_user(username=data['username'], password=data['password'])
-            # token = Token.objects.create(user=user)
+            new_post = Post.objects.create(title=data['title'], content=data['content'], user=request.user)
+            new_post.images.add(*data['images'])
+            new_post.tags.add(*data['tags'])
             return Response({'message': 'ok'}, status=status.HTTP_200_OK)
         except Exception as exc:
             return Response({'detail': repr(exc)}, status=status.HTTP_400_BAD_REQUEST)
