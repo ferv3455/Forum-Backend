@@ -1,77 +1,4 @@
-# 移动应用大作业后端API
-
-## 登录/注册
-
-### 登录
-
-> `auth/login/`, POST
-
-Header中不能包含token。提交数据：
-```json
-{
-  "username": "xxx",
-  "password": "xxx"
-}
-```
-正常情况下返回token（状态码200）：
-```json
-{
-  "token": "xxx"
-}
-```
-返回的token需要添加到其他请求的Header中，格式为：
-```text
-Authorization: Token xxxxxx
-```
-
-
-### 登出
-
-> `auth/logout/`, GET
-
-Header中需要包含token。正常情况下返回ok（状态码200）：
-
-```json
-{
-  "message": "ok"
-}
-```
-
-
-### 注册
-
-> `auth/register/`, POST
-
-Header中不能包含token。提交数据：
-```json
-{
-  "username": "xxx",
-  "password": "xxx"
-}
-```
-正常情况下直接完成登录，返回token（状态码200）：
-```json
-{
-  "token": "xxx"
-}
-```
-返回的token需要添加到其他请求的Header中。
-
-
-### 检测登录状态token
-
-> `auth/check-valid/`, GET
-
-Header中需要包含token。正常情况下返回ok（状态码200）：
-
-```json
-{
-  "message": "ok"
-}
-```
-
-
-## 动态列表
+## 动态列表相关API
 
 ### 动态信息
 
@@ -115,9 +42,30 @@ Header中需要包含token。正常情况下返回ok（状态码200）：
 
 > `forum/posts/`, POST
 
-需要登录，新建帖子。
+需要登录，新建帖子。POST提交的JSON格式信息需要包含以下内容：
 
-TODO
+```json
+{
+  "title": "xxx",
+  "content": "xxx",
+  "images": [
+    "image_id1",
+    "image_id2"
+  ],
+  "tags": [
+    "tag_name1",
+    "tag_name2"
+  ]
+}
+```
+
+正常情况下返回ok（状态码200）：
+
+```json
+{
+  "message": "ok"
+}
+```
 
 
 ### 动态详情
@@ -153,6 +101,56 @@ TODO
   "likes": 23,
   "favorites": 432,
   "comments": 12
+}
+```
+
+## 图片资源管理
+
+### 添加图片
+
+> `forum/image/`, POST
+
+在JSON数据中使用图片的base64格式数据作为`data`项。
+
+```json
+{
+  "data": "xxx"
+}
+```
+
+正确添加后返回图片的ID信息与缩略图（`thumbnail`）：
+
+```json
+{
+  "id": "xxx",
+  "thumbnail": "xxx"
+}
+```
+
+
+### 获取完整图片
+
+> `forum/image/<image:id>`, GET
+
+返回图片的ID信息与完整图（`content`）：
+
+```json
+{
+  "id": "xxx",
+  "content": "xxx"
+}
+```
+
+
+### 删除图片
+
+> `forum/image/<image:id>`, DELETE
+
+正常删除后返回ok（状态码200）：
+
+```json
+{
+  "message": "ok"
 }
 ```
 

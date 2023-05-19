@@ -3,8 +3,9 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import Post
-from .serializers import PostSerializer, PostFullSerializer
+from .models import Image, Post
+from .serializers import ImageSerializer, ImageFullSerializer, PostSerializer, PostFullSerializer
+from core.image import compress
 
 
 class HelloView(APIView):
@@ -50,3 +51,34 @@ class PostDetailView(APIView):
         query_result = Post.objects.get(id=id)
         return Response(PostFullSerializer(query_result).data,
                         status=status.HTTP_200_OK)
+
+
+class ImageView(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request, format=None):
+        # Add a new image
+        data = request.data
+        try:
+            img_base64 = data['data']
+            compressed_base64 = compress(img_base64)
+            new_image = Image.objects.create(content=img_base64, thumbnail=compressed_base64)
+            return Response(ImageSerializer(new_image).data,
+                            status=status.HTTP_200_OK)
+        except Exception as exc:
+            return Response({'detail': repr(exc)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ImageInstanceView(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request, id, format=None):
+        # Get the content of a certain image
+        image = Image.objects.get(id=id)
+        return Response(ImageFullSerializer(image).data,
+                        status=status.HTTP_200_OK)
+
+    def delete(self, request, id, format=None):
+        # Delete an image on the server
+        Image.objects.get(id=id).delete()
+        return Response({'message': 'ok'}, status=status.HTTP_200_OK)

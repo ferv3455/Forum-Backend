@@ -7,7 +7,7 @@ from .models import Tag, Image
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('username', )
+        fields = ('id', 'username', )
 
 
 class TagSerializer(serializers.ModelSerializer):
