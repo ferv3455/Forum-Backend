@@ -1,13 +1,8 @@
-from django.contrib.auth.models import User
 from rest_framework import serializers
 
+from authentication.models import Profile
+from authentication.serializers import ProfileSerializer
 from .models import Tag, Image
-
-
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ('id', 'username', )
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -33,7 +28,7 @@ class PostSerializer(serializers.Serializer):
     title = serializers.CharField()
     content = serializers.CharField()
     createdAt = serializers.DateTimeField()
-    user = UserSerializer()
+    user_profile = serializers.SerializerMethodField('get_user_profile')
 
     images = ImageSerializer(many=True)
     tags = TagSerializer(many=True)
@@ -41,6 +36,11 @@ class PostSerializer(serializers.Serializer):
     likes = serializers.IntegerField()
     favorites = serializers.IntegerField()
     comments = serializers.IntegerField()
+
+    def get_user_profile(self, post):
+        user = post.user
+        profile = Profile.objects.get(user=user)
+        return ProfileSerializer(profile).data
 
 
 class PostFullSerializer(PostSerializer):

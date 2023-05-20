@@ -1,17 +1,18 @@
 from rest_framework import serializers
 
-from forum.serializers import UserSerializer, PostSerializer
-
-
-class ProfileSerializer(serializers.Serializer):
-    user = UserSerializer()
-    avatar = serializers.CharField()
-    description = serializers.CharField()
+from authentication.models import Profile
+from authentication.serializers import UserSerializer, ProfileSerializer
+from forum.serializers import PostSerializer
 
 
 class FollowListSerializer(serializers.Serializer):
     user = UserSerializer()
-    following = UserSerializer(many=True)
+    following = serializers.SerializerMethodField('get_user_profiles')
+
+    def get_user_profiles(self, follow_list):
+        following_users = follow_list.following
+        following_profiles = Profile.objects.filter(user__in=following_users.all())
+        return ProfileSerializer(following_profiles, many=True).data
 
 
 class FavoriteListSerializer(serializers.Serializer):

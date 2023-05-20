@@ -1,12 +1,16 @@
+from operator import attrgetter
+
 from django.contrib.auth.models import User
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from authentication.models import Profile
+from authentication.serializers import ProfileSerializer, UserSerializer
 from forum.models import Post
-from .models import Profile, FollowList, FavoriteList
-from .serializers import ProfileSerializer, FollowListSerializer, FavoriteListSerializer
+from .models import FollowList, FavoriteList
+from .serializers import FollowListSerializer, FavoriteListSerializer
 
 
 # Create your views here.
@@ -119,6 +123,24 @@ class FollowListView(APIView):
             follow_list.following.remove(*users_to_unfollow)
             follow_list.save()
             return Response({'message': 'ok'}, status=status.HTTP_200_OK)
+        except Exception as exc:
+            return Response({'detail': repr(exc)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class FollowedView(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request, format=None):
+        # Get a list of the users following you
+        try:
+            user = request.user
+            fav_lists = FollowList.objects.filter(following=user)
+            followers = map(attrgetter('user'), fav_lists)
+            profiles = Profile.objects.filter(user__in=followers)
+            return Response({
+                'user': UserSerializer(user).data,
+                'followed': ProfileSerializer(profiles, many=True).data
+            }, status=status.HTTP_200_OK)
         except Exception as exc:
             return Response({'detail': repr(exc)}, status=status.HTTP_400_BAD_REQUEST)
 

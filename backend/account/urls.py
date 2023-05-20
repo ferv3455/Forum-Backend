@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views import ProfileView, UsernameView, PasswordView, FollowListView, FavoritesListView
+from .views import ProfileView, UsernameView, PasswordView, FollowListView, FollowedView, FavoritesListView
 
 
 urlpatterns = [
@@ -13,6 +13,7 @@ urlpatterns = [
     # Following list
     path('following', FollowListView.as_view(), name='own-following'),
     path('following/<str:username>', FollowListView.as_view(), name='following'),
+    path('followed', FollowedView.as_view(), name='own-followed'),
     path('favorites', FavoritesListView.as_view(), name='own-favorites'),
     path('favorites/<str:username>', FavoritesListView.as_view(), name='favorites'),
 ]

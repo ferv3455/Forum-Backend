@@ -13,8 +13,13 @@
     "title": "hi!",
     "content": "this is me",
     "createdAt": "2023-05-16T06:47:34.052062Z",
-    "user": {
-      "username": "xxx"
+    "user_profile": {
+      "user": {
+        "id": 1,
+        "username": "ferv3455"
+      },
+      "avatar": "aa",
+      "description": "dd"
     },
     "images": [
       {
@@ -80,8 +85,13 @@
   "title": "hi!",
   "content": "this is me",
   "createdAt": "2023-05-16T06:47:34.052062Z",
-  "user": {
-    "username": "xxx"
+  "user_profile": {
+    "user": {
+      "id": 1,
+      "username": "ferv3455"
+    },
+    "avatar": "aa",
+    "description": "dd"
   },
   "images": [
     {
