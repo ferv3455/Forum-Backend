@@ -2,9 +2,11 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from django.contrib.auth.models import AnonymousUser
 
-from .models import Image, Post
-from .serializers import ImageSerializer, ImageFullSerializer, PostSerializer, PostFullSerializer
+from account.models import FollowList
+from .models import Tag, Image, Post, Like, Comment
+from .serializers import ImageSerializer, ImageFullSerializer, PostSerializer, PostFullSerializer, CommentSerializer
 from core.image import compress
 
 
@@ -19,17 +21,44 @@ class PostListView(APIView):
     permission_classes = (AllowAny,)
 
     def get(self, request, format=None):
-        # Get all posts
-        sort_by = request.GET.get('sortBy', 'time')
-        if sort_by == 'hot':
-            query_results = Post.objects.all().order_by('-comments')
-        elif sort_by == 'following':
-            query_results = Post.objects.all().order_by('-likes')
-        else:
-            query_results = Post.objects.all().order_by('-createdAt')
+        # Get all posts according to filtering conditions
+        # TODO: paging
+        # Anonymous users can only get the full list
+        if isinstance(request.user, AnonymousUser):
+            if len(request.GET) != 0:
+                return Response({'detail': 'Authentication credentials were not provided.'},
+                                status=status.HTTP_401_UNAUTHORIZED)
 
-        return Response(PostSerializer(query_results, many=True).data,
-                        status=status.HTTP_200_OK)
+        try:
+            query_results = Post.objects.all()
+
+            # Filtering
+            if 'user' in request.GET:
+                query_results = query_results.filter(user__username=request.GET.get('user'))
+
+            if 'following' in request.GET:
+                if request.GET.get('following', 'false') == 'true':
+                    follow_list = FollowList.objects.get(user=request.user)
+                    query_results = query_results.filter(user__in=follow_list.following.all())
+
+            # Sorting
+            # time: the time of publication
+            # comment-time: the time of the latest comment
+            # hot: the number of comments in a day's time (at least 1)
+
+            sort_by = request.GET.get('sortBy', 'time')
+            if sort_by == 'hot':
+                # TODO
+                query_results = query_results.order_by('-comments')
+            elif sort_by == 'comment-time':
+                query_results = query_results.order_by('-lastCommented')
+            else:
+                query_results = query_results.order_by('-createdAt')
+
+            return Response(PostSerializer(query_results, many=True).data,
+                            status=status.HTTP_200_OK)
+        except Exception as exc:
+            return Response({'detail': repr(exc)}, status=status.HTTP_400_BAD_REQUEST)
 
     def post(self, request, format=None):
         # Add a new post
@@ -37,6 +66,12 @@ class PostListView(APIView):
         try:
             new_post = Post.objects.create(title=data['title'], content=data['content'], user=request.user)
             new_post.images.add(*data['images'])
+
+            for tag in data['tags']:
+                query = Tag.objects.filter(name=tag)
+                if len(query) == 0:
+                    Tag.objects.create(name=tag)
+
             new_post.tags.add(*data['tags'])
             return Response({'message': 'ok'}, status=status.HTTP_200_OK)
         except Exception as exc:
@@ -74,11 +109,118 @@ class ImageInstanceView(APIView):
 
     def get(self, request, id, format=None):
         # Get the content of a certain image
-        image = Image.objects.get(id=id)
-        return Response(ImageFullSerializer(image).data,
-                        status=status.HTTP_200_OK)
+        try:
+            image = Image.objects.get(id=id)
+            return Response(ImageFullSerializer(image).data,
+                            status=status.HTTP_200_OK)
+        except Exception as exc:
+            return Response({'detail': repr(exc)}, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, id, format=None):
         # Delete an image on the server
-        Image.objects.get(id=id).delete()
-        return Response({'message': 'ok'}, status=status.HTTP_200_OK)
+        try:
+            Image.objects.get(id=id).delete()
+            return Response({'message': 'ok'}, status=status.HTTP_200_OK)
+        except Exception as exc:
+            return Response({'detail': repr(exc)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class LikeView(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request, id, format=None):
+        # Like a post
+        try:
+            user = request.user
+            query = Like.objects.filter(user=user, post__id=id)
+            if len(query) != 0:
+                return Response({'detail': 'Already liked by the user'}, status=status.HTTP_400_BAD_REQUEST)
+
+            post = Post.objects.get(id=id)
+            Like.objects.create(user=user, post=post)
+            post.likes += 1
+            post.save()
+            return Response({'message': 'ok'}, status=status.HTTP_200_OK)
+        except Exception as exc:
+            return Response({'detail': repr(exc)}, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, id, format=None):
+        # Un-like a post
+        try:
+            user = request.user
+            query = Like.objects.filter(user=user, post__id=id)
+            if len(query) == 0:
+                return Response({'detail': 'Not liked by the user yet'}, status=status.HTTP_400_BAD_REQUEST)
+
+            query.delete()
+            post = Post.objects.get(id=id)
+            post.likes -= 1
+            post.save()
+            return Response({'message': 'ok'}, status=status.HTTP_200_OK)
+        except Exception as exc:
+            return Response({'detail': repr(exc)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CommentView(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request, id, format=None):
+        # Display all comments in a post
+        # TODO: order
+        try:
+            post = Post.objects.get(id=id)
+            query_results = Comment.objects.filter(post=post)
+
+            # Sorting
+            # time: the time of publication
+            # hot: the number of likes (at least 3)
+
+            sort_by = request.GET.get('sortBy', 'time')
+            if sort_by == 'hot':
+                query_results = query_results.filter(likes__gte=3).order_by('-likes')
+            else:
+                query_results = query_results.order_by('-createdAt')
+
+            return Response(CommentSerializer(query_results, many=True).data,
+                            status=status.HTTP_200_OK)
+
+        except Exception as exc:
+            return Response({'detail': repr(exc)}, status=status.HTTP_400_BAD_REQUEST)
+
+    def post(self, request, id, format=None):
+        # Comment a post
+        try:
+            user = request.user
+            content = request.data['content']
+            post = Post.objects.get(id=id)
+            comment = Comment.objects.create(user=user, post=post, content=content)
+            post.lastCommented = comment.createdAt
+            post.comments += 1
+            post.save()
+            return Response({'message': 'ok'}, status=status.HTTP_200_OK)
+        except Exception as exc:
+            return Response({'detail': repr(exc)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CommentLikeView(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request, id, format=None):
+        # Like a comment
+        try:
+            comment = Comment.objects.get(id=id)
+            comment.likes += 1
+            comment.save()
+            return Response({'message': 'ok'}, status=status.HTTP_200_OK)
+        except Exception as exc:
+            return Response({'detail': repr(exc)}, status=status.HTTP_400_BAD_REQUEST)
+
+    # def delete(self, request, id, format=None):
+    #     # Un-like a comment
+    #     try:
+    #         comment = Comment.objects.get(id=id)
+    #         comment.likes -= 1
+    #         comment.save()
+    #         return Response({'message': 'ok'}, status=status.HTTP_200_OK)
+    #     except Exception as exc:
+    #         return Response({'detail': repr(exc)}, status=status.HTTP_400_BAD_REQUEST)

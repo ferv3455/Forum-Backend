@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from authentication.models import Profile
 from authentication.serializers import ProfileSerializer
-from .models import Tag, Image
+from .models import Tag, Image, Comment
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -27,7 +27,7 @@ class PostSerializer(serializers.Serializer):
     id = serializers.UUIDField()
     title = serializers.CharField()
     content = serializers.CharField()
-    createdAt = serializers.DateTimeField()
+    createdAt = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")
     user_profile = serializers.SerializerMethodField('get_user_profile')
 
     images = ImageSerializer(many=True)
@@ -45,3 +45,16 @@ class PostSerializer(serializers.Serializer):
 
 class PostFullSerializer(PostSerializer):
     images = ImageFullSerializer(many=True)
+
+
+class CommentSerializer(serializers.Serializer):
+    id = serializers.UUIDField()
+    user_profile = serializers.SerializerMethodField('get_user_profile')
+    content = serializers.CharField()
+    createdAt = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")
+    likes = serializers.IntegerField()
+
+    def get_user_profile(self, comment):
+        user = comment.user
+        profile = Profile.objects.get(user=user)
+        return ProfileSerializer(profile).data

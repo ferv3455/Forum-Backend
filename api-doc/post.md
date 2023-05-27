@@ -1,10 +1,22 @@
-## 动态列表相关API
+# 动态列表相关API
 
-### 动态信息
+## 动态信息
+
+### 动态列表（包括各种排序、筛选）
 
 > `forum/posts/`, GET
 
-**无需登录信息**（有信息也可）。返回动态列表，其中`images`中各个对象的`id`对应了一个图片，提供的`thumbnail`为base64缩略图。在详情界面需要使用下面单独的URL重新获取，得到完整图片。
+返回动态列表，其中`images`中各个对象的`id`对应了一个图片，提供的`thumbnail`为base64缩略图。在详情界面需要使用下面单独的URL重新获取，得到完整图片。
+
+该URL可以添加参数，用以筛选动态或指定排序：
+
+- `user`：筛选特定用户的动态（值为用户名）
+- `following`：筛选已关注用户的动态（值只能为`'true'`）
+- `sortBy`：排序方式，支持`'time'`（发布时间）、`'comment-time'`（最新评论时间）、`'hot'`（最近一天内的评论数，至少为1，**目前还未实现**）
+
+带URL参数的GET请求已通过`HTTPRequest.getWithParams`函数实现，前端可以直接调用。
+
+**获取默认列表时无需登录信息（有信息也可）。如果需要添加参数，如筛选用户名、类别等，则需要登录信息。**
 
 ```json
 [
@@ -164,15 +176,53 @@
 }
 ```
 
+## 点赞与评论
 
-## 测试内容
+### 点赞
 
-> `forum/`, GET
+> `forum/like/<post:id>`, POST
 
-在正确登录的情况下（Header中有token），能够正确返回hello信息：
+### 取消点赞
+
+> `forum/like/<post:id>`, DELETE
+
+### 查看评论列表
+
+> `forum/comment/<post:id>`, GET
+
+返回JSON格式评论列表：
+
+```json
+[
+  {
+    "id": "1f596b74-f05c-42b8-98af-18a75bd5961a",
+    "user_profile": {
+      "user": {
+        "id": 1,
+        "username": "ferv3455"
+      },
+      "avatar": "aa",
+      "description": "dd"
+    },
+    "content": "haha3",
+    "createdAt": "2023-05-27 23:52:43",
+    "likes": 6
+  }
+]
+```
+
+### 发表评论
+
+> `forum/comment/<post:id>`, POST
 
 ```json
 {
-  "message": "hello!"
+  "content": "haha"
 }
 ```
+
+### 点赞评论
+
+> `forum/comment/like/<comment:id>`, POST
+
+仅支持点赞，不能取消点赞。目前可以不断点赞同一条。

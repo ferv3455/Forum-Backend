@@ -168,6 +168,11 @@ class FavoritesListView(APIView):
             fav_list = FavoriteList.objects.get(user=user)
             fav_list.favorites.add(*posts_to_fav)
             fav_list.save()
+
+            for post in posts_to_fav.all():
+                post.favorites += 1
+                post.save()
+
             return Response({'message': 'ok'}, status=status.HTTP_200_OK)
         except Exception as exc:
             return Response({'detail': repr(exc)}, status=status.HTTP_400_BAD_REQUEST)
@@ -182,6 +187,11 @@ class FavoritesListView(APIView):
             fav_list = FavoriteList.objects.get(user=user)
             fav_list.favorites.remove(*posts_to_unfav)
             fav_list.save()
+
+            for post in posts_to_unfav.all():
+                post.favorites -= 1
+                post.save()
+
             return Response({'message': 'ok'}, status=status.HTTP_200_OK)
         except Exception as exc:
             return Response({'detail': repr(exc)}, status=status.HTTP_400_BAD_REQUEST)
