@@ -1,10 +1,12 @@
+from uuid import UUID
+
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.contrib.auth.models import AnonymousUser
 
-from account.models import FollowList
+from account.models import FollowList, FavoriteList
 from .models import Tag, Image, Post, Like, Comment
 from .serializers import ImageSerializer, ImageFullSerializer, PostSerializer, PostFullSerializer, CommentSerializer
 from core.image import compress
@@ -55,8 +57,13 @@ class PostListView(APIView):
             else:
                 query_results = query_results.order_by('-createdAt')
 
-            return Response(PostSerializer(query_results, many=True).data,
-                            status=status.HTTP_200_OK)
+            # Add isStarred data
+            fav_list = FavoriteList.objects.get(user=request.user).favorites.values_list('id', flat=True)
+            result = PostSerializer(query_results, many=True).data
+            for value in result:
+                value['isStarred'] = UUID(value['id']) in fav_list
+
+            return Response(result, status=status.HTTP_200_OK)
         except Exception as exc:
             return Response({'detail': repr(exc)}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -84,8 +91,10 @@ class PostDetailView(APIView):
     def get(self, request, id, format=None):
         # Get detailed post
         query_result = Post.objects.get(id=id)
-        return Response(PostFullSerializer(query_result).data,
-                        status=status.HTTP_200_OK)
+        fav_list = FavoriteList.objects.get(user=request.user).favorites.values_list('id', flat=True)
+        result = PostFullSerializer(query_result).data
+        result['isStarred'] = UUID(result['id']) in fav_list
+        return Response(result, status=status.HTTP_200_OK)
 
 
 class ImageView(APIView):

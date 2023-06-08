@@ -153,8 +153,10 @@ class FavoritesListView(APIView):
         try:
             user = get_user(request, username)
             fav_list = FavoriteList.objects.get(user=user)
-            return Response(FavoriteListSerializer(fav_list).data,
-                            status=status.HTTP_200_OK)
+            result = FavoriteListSerializer(fav_list).data.get('favorites')
+            for post in result:
+                post['isStarred'] = True
+            return Response(result, status=status.HTTP_200_OK)
         except Exception as exc:
             return Response({'detail': repr(exc)}, status=status.HTTP_400_BAD_REQUEST)
 

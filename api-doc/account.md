@@ -217,49 +217,44 @@
 > 
 > `account/favorites/<username>` GET
 
-获取用户的收藏列表，其中`favorites`项的格式类似动态列表：
+获取用户的收藏列表，格式类似动态列表：
 
 ```json
-{
-  "user": {
-    "id": 1,
-    "username": "ferv3455"
-  },
-  "favorites": [
-    {
-      "id": "c25e99e6-4282-4d52-8856-0e019a816f7c",
-      "title": "third post",
-      "content": "hello there!",
-      "createdAt": "2023-05-19T15:18:59.605920Z",
-      "user_profile": {
-          "user": {
-            "id": 1,
-            "username": "ferv3455"
-          },
-          "avatar": "aa",
-          "description": "dd"
+[
+  {
+    "id": "c25e99e6-4282-4d52-8856-0e019a816f7c",
+    "title": "third post",
+    "content": "hello there!",
+    "createdAt": "2023-05-19T15:18:59.605920Z",
+    "user_profile": {
+        "user": {
+          "id": 1,
+          "username": "ferv3455"
         },
-      "images": [
-        {
-          "id": "07c6fb95-0747-414d-b6bd-7e4a9087f848",
-          "thumbnail": "xxx"
-        },
-        {
-          "id": "e16817ac-9692-4a5b-857e-730d145851ba",
-          "thumbnail": "xxx"
-        }
-      ],
-      "tags": [
-        {
-          "name": "Activity"
-        }
-      ],
-      "likes": 0,
-      "favorites": 0,
-      "comments": 0
-    }
-  ]
-}
+        "avatar": "aa",
+        "description": "dd"
+      },
+    "images": [
+      {
+        "id": "07c6fb95-0747-414d-b6bd-7e4a9087f848",
+        "thumbnail": "xxx"
+      },
+      {
+        "id": "e16817ac-9692-4a5b-857e-730d145851ba",
+        "thumbnail": "xxx"
+      }
+    ],
+    "tags": [
+      {
+        "name": "Activity"
+      }
+    ],
+    "likes": 0,
+    "favorites": 0,
+    "comments": 0,
+    "isStarred": true
+  }
+]
 ```
 
 ### 收藏动态

@@ -50,7 +50,8 @@
     ],
     "likes": 23,
     "favorites": 432,
-    "comments": 12
+    "comments": 12,
+    "isStarred": true
   }
 ]
 ```
@@ -122,7 +123,8 @@
   ],
   "likes": 23,
   "favorites": 432,
-  "comments": 12
+  "comments": 12,
+  "isStarred": true
 }
 ```
 
