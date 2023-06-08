@@ -188,7 +188,31 @@
 
 > `forum/like/<post:id>`, DELETE
 
-### 查看评论列表
+### 点赞自己动态的列表
+
+> `forum/likes/`, GET
+
+```json
+[
+  {
+    "user_profile": {
+      "user": {
+        "id": 1,
+        "username": "ferv3455"
+      },
+      "avatar": "aa",
+      "description": "dd"
+    },
+    "post": {
+      "id": "c25e99e6-4282-4d52-8856-0e019a816f7c",
+      "title": "third post"
+    },
+    "createdAt": "2023-05-27 23:59:49"
+  }
+]
+```
+
+### 查看动态里的评论列表
 
 > `forum/comment/<post:id>`, GET
 
@@ -205,6 +229,10 @@
       },
       "avatar": "aa",
       "description": "dd"
+    },
+    "post": {
+      "id": "c25e99e6-4282-4d52-8856-0e019a816f7c",
+      "title": "third post"
     },
     "content": "haha3",
     "createdAt": "2023-05-27 23:52:43",
@@ -228,3 +256,31 @@
 > `forum/comment/like/<comment:id>`, POST
 
 仅支持点赞，不能取消点赞。目前可以不断点赞同一条。
+
+
+### 评论自己动态的列表
+
+> `forum/comments/`, GET
+
+```json
+[
+  {
+    "id": "188defed-b5b7-4e0a-9256-9a2655856ca2",
+    "user_profile": {
+      "user": {
+        "id": 1,
+        "username": "ferv3455"
+      },
+      "avatar": "aa",
+      "description": "dd"
+    },
+    "post": {
+      "id": "c25e99e6-4282-4d52-8856-0e019a816f7c",
+      "title": "third post"
+    },
+    "content": "haha",
+    "createdAt": "2023-05-27 23:30:54",
+    "likes": 6
+  }
+]
+```

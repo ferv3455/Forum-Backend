@@ -22,4 +22,5 @@ urlpatterns = [
     path('forum/', include('forum.urls')),
     path('auth/', include('authentication.urls')),
     path('account/', include('account.urls')),
+    path('notification/', include('notification.urls')),
 ]

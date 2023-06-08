@@ -8,7 +8,8 @@ from django.contrib.auth.models import AnonymousUser
 
 from account.models import FollowList, FavoriteList
 from .models import Tag, Image, Post, Like, Comment
-from .serializers import ImageSerializer, ImageFullSerializer, PostSerializer, PostFullSerializer, CommentSerializer
+from .serializers import ImageSerializer, ImageFullSerializer, PostSerializer, PostFullSerializer, CommentSerializer, \
+    LikeSerializer
 from core.image import compress
 
 
@@ -233,3 +234,29 @@ class CommentLikeView(APIView):
     #         return Response({'message': 'ok'}, status=status.HTTP_200_OK)
     #     except Exception as exc:
     #         return Response({'detail': repr(exc)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class LikeListView(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request, format=None):
+        # Get all likes
+        try:
+            user = request.user
+            query = Like.objects.filter(post__user=user)
+            return Response(LikeSerializer(query, many=True).data, status=status.HTTP_200_OK)
+        except Exception as exc:
+            return Response({'detail': repr(exc)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CommentListView(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request, format=None):
+        # Get all comments
+        try:
+            user = request.user
+            query = Comment.objects.filter(post__user=user)
+            return Response(CommentSerializer(query, many=True).data, status=status.HTTP_200_OK)
+        except Exception as exc:
+            return Response({'detail': repr(exc)}, status=status.HTTP_400_BAD_REQUEST)
