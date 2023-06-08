@@ -3,5 +3,6 @@ from . import views
 
 
 urlpatterns = [
-    path('', views.HelloView.as_view(), name='hello'),
+    path('messages-received/', views.MessageReceivedView.as_view(), name='received'),
+    path('messages/', views.MessageView.as_view(), name='messages'),
 ]
