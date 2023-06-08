@@ -2,6 +2,7 @@ from rest_framework import serializers
 
 from authentication.models import Profile
 from authentication.serializers import ProfileSerializer
+from forum.serializers import LikeSerializer, CommentSerializer
 
 
 class MessageSerializer(serializers.Serializer):
@@ -19,3 +20,11 @@ class MessageSerializer(serializers.Serializer):
         user = comment.toUser
         profile = Profile.objects.get(user=user)
         return ProfileSerializer(profile).data
+
+
+class LikeMessageSerializer(serializers.Serializer):
+    like = LikeSerializer()
+
+
+class CommentMessageSerializer(serializers.Serializer):
+    comment = CommentSerializer()

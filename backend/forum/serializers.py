@@ -57,8 +57,8 @@ class LikeSerializer(serializers.Serializer):
     post = PostBriefSerializer()
     createdAt = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")
 
-    def get_user_profile(self, comment):
-        user = comment.user
+    def get_user_profile(self, like):
+        user = like.user
         profile = Profile.objects.get(user=user)
         return ProfileSerializer(profile).data
 
