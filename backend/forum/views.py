@@ -8,6 +8,7 @@ from rest_framework.views import APIView
 from django.contrib.auth.models import AnonymousUser
 
 from account.models import FollowList, FavoriteList
+from core.query import query
 from .models import Tag, Image, Post, Like, Comment
 from .serializers import ImageSerializer, ImageFullSerializer, PostSerializer, PostFullSerializer, CommentSerializer, \
     LikeSerializer
@@ -44,6 +45,9 @@ class PostListView(APIView):
                 if request.GET.get('following', 'false') == 'true':
                     follow_list = FollowList.objects.get(user=request.user)
                     query_results = query_results.filter(user__in=follow_list.following.all())
+
+            if 'query' in request.GET:
+                query_results = query(query_results, request.GET.get('query'))
 
             # Sorting
             # time: the time of publication
