@@ -1,5 +1,6 @@
 import traceback
 from operator import attrgetter
+from uuid import UUID
 
 from django.contrib.auth.models import User
 from rest_framework import status
@@ -9,7 +10,7 @@ from rest_framework.views import APIView
 
 from authentication.models import Profile
 from authentication.serializers import ProfileSerializer, UserSerializer
-from forum.models import Post
+from forum.models import Post, Like
 from .models import FollowList, FavoriteList
 from .serializers import FollowListSerializer, FavoriteListSerializer
 
@@ -162,9 +163,11 @@ class FavoritesListView(APIView):
         try:
             user = get_user(request, username)
             fav_list = FavoriteList.objects.get(user=user)
+            like_list = Like.objects.filter(user=request.user).values_list('post', flat=True)
             result = FavoriteListSerializer(fav_list).data.get('favorites')
             for post in result:
                 post['isStarred'] = True
+                post['isLiked'] = UUID(post['id']) in like_list
             return Response(result, status=status.HTTP_200_OK)
         except Exception as exc:
             traceback.print_exc()
