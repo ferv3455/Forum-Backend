@@ -65,9 +65,11 @@ class PostListView(APIView):
 
             # Add isStarred data
             fav_list = FavoriteList.objects.get(user=request.user).favorites.values_list('id', flat=True)
+            like_list = Like.objects.filter(user=request.user).values_list('post', flat=True)
             result = PostSerializer(query_results, many=True).data
             for value in result:
                 value['isStarred'] = UUID(value['id']) in fav_list
+                value['isLiked'] = UUID(value['id']) in like_list
 
             return Response(result, status=status.HTTP_200_OK)
         except Exception as exc:
@@ -102,8 +104,10 @@ class PostDetailView(APIView):
         # Get detailed post
         query_result = Post.objects.get(id=id)
         fav_list = FavoriteList.objects.get(user=request.user).favorites.values_list('id', flat=True)
+        like_list = Like.objects.filter(user=request.user).values_list('post', flat=True)
         result = PostFullSerializer(query_result).data
         result['isStarred'] = UUID(result['id']) in fav_list
+        result['isLiked'] = UUID(result['id']) in like_list
         return Response(result, status=status.HTTP_200_OK)
 
 

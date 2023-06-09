@@ -15,10 +15,8 @@ def query_content(query_set: QuerySet, keyword: str):
 
 def query(query_set: QuerySet, query_string: str):
     filters = query_string.split()
-    print(filters)
 
     for f in filters:
-        print(query_set)
         if f.startswith('#'):
             query_set = query_tag(query_set, f[1:])
         elif f.startswith('$'):
