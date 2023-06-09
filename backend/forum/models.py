@@ -30,6 +30,7 @@ class Post(models.Model):
 
     images = models.ManyToManyField(Image, blank=True)
     tags = models.ManyToManyField(Tag, blank=True)
+    location = models.CharField(max_length=64, null=True)
 
     likes = models.IntegerField(default=0)
     favorites = models.IntegerField(default=0)

@@ -1,3 +1,4 @@
+import traceback
 from uuid import UUID
 
 from rest_framework import status
@@ -66,23 +67,27 @@ class PostListView(APIView):
 
             return Response(result, status=status.HTTP_200_OK)
         except Exception as exc:
+            traceback.print_exc()
             return Response({'detail': repr(exc)}, status=status.HTTP_400_BAD_REQUEST)
 
     def post(self, request, format=None):
         # Add a new post
         data = request.data
         try:
-            new_post = Post.objects.create(title=data['title'], content=data['content'], user=request.user)
+            new_post = Post.objects.create(title=data['title'], content=data['content'],
+                                           user=request.user, location=data.get('location', None))
             new_post.images.add(*data['images'])
 
             for tag in data['tags']:
-                query = Tag.objects.filter(name=tag)
-                if len(query) == 0:
-                    Tag.objects.create(name=tag)
+                if tag:
+                    query = Tag.objects.filter(name=tag)
+                    if len(query) == 0:
+                        Tag.objects.create(name=tag)
 
-            new_post.tags.add(*data['tags'])
+            new_post.tags.add(*(tag for tag in data['tags'] if tag))
             return Response({'message': 'ok'}, status=status.HTTP_200_OK)
         except Exception as exc:
+            traceback.print_exc()
             return Response({'detail': repr(exc)}, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -111,6 +116,7 @@ class ImageView(APIView):
             return Response(ImageSerializer(new_image).data,
                             status=status.HTTP_200_OK)
         except Exception as exc:
+            traceback.print_exc()
             return Response({'detail': repr(exc)}, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -124,6 +130,7 @@ class ImageInstanceView(APIView):
             return Response(ImageFullSerializer(image).data,
                             status=status.HTTP_200_OK)
         except Exception as exc:
+            traceback.print_exc()
             return Response({'detail': repr(exc)}, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, id, format=None):
@@ -132,6 +139,7 @@ class ImageInstanceView(APIView):
             Image.objects.get(id=id).delete()
             return Response({'message': 'ok'}, status=status.HTTP_200_OK)
         except Exception as exc:
+            traceback.print_exc()
             return Response({'detail': repr(exc)}, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -152,6 +160,7 @@ class LikeView(APIView):
             post.save()
             return Response({'message': 'ok'}, status=status.HTTP_200_OK)
         except Exception as exc:
+            traceback.print_exc()
             return Response({'detail': repr(exc)}, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, id, format=None):
@@ -168,6 +177,7 @@ class LikeView(APIView):
             post.save()
             return Response({'message': 'ok'}, status=status.HTTP_200_OK)
         except Exception as exc:
+            traceback.print_exc()
             return Response({'detail': repr(exc)}, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -195,6 +205,7 @@ class CommentView(APIView):
                             status=status.HTTP_200_OK)
 
         except Exception as exc:
+            traceback.print_exc()
             return Response({'detail': repr(exc)}, status=status.HTTP_400_BAD_REQUEST)
 
     def post(self, request, id, format=None):
@@ -209,6 +220,7 @@ class CommentView(APIView):
             post.save()
             return Response({'message': 'ok'}, status=status.HTTP_200_OK)
         except Exception as exc:
+            traceback.print_exc()
             return Response({'detail': repr(exc)}, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -223,6 +235,7 @@ class CommentLikeView(APIView):
             comment.save()
             return Response({'message': 'ok'}, status=status.HTTP_200_OK)
         except Exception as exc:
+            traceback.print_exc()
             return Response({'detail': repr(exc)}, status=status.HTTP_400_BAD_REQUEST)
 
     # def delete(self, request, id, format=None):
@@ -233,6 +246,7 @@ class CommentLikeView(APIView):
     #         comment.save()
     #         return Response({'message': 'ok'}, status=status.HTTP_200_OK)
     #     except Exception as exc:
+    #         traceback.print_exc()
     #         return Response({'detail': repr(exc)}, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -246,6 +260,7 @@ class LikeListView(APIView):
             query = Like.objects.filter(post__user=user)
             return Response(LikeSerializer(query, many=True).data, status=status.HTTP_200_OK)
         except Exception as exc:
+            traceback.print_exc()
             return Response({'detail': repr(exc)}, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -259,4 +274,5 @@ class CommentListView(APIView):
             query = Comment.objects.filter(post__user=user)
             return Response(CommentSerializer(query, many=True).data, status=status.HTTP_200_OK)
         except Exception as exc:
+            traceback.print_exc()
             return Response({'detail': repr(exc)}, status=status.HTTP_400_BAD_REQUEST)

@@ -1,3 +1,5 @@
+import traceback
+
 from django.contrib.auth.models import User
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -24,6 +26,7 @@ class RegisterView(APIView):
             token = Token.objects.create(user=user)
             return Response({'token': token.key}, status=status.HTTP_200_OK)
         except Exception as exc:
+            traceback.print_exc()
             return Response({'detail': repr(exc)}, status=status.HTTP_400_BAD_REQUEST)
 
 

@@ -50,6 +50,7 @@ class PostSerializer(serializers.Serializer):
 
 class PostFullSerializer(PostSerializer):
     images = ImageFullSerializer(many=True)
+    location = serializers.CharField()
 
 
 class LikeSerializer(serializers.Serializer):

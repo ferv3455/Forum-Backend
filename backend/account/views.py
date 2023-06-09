@@ -1,3 +1,4 @@
+import traceback
 from operator import attrgetter
 
 from django.contrib.auth.models import User
@@ -33,6 +34,7 @@ class ProfileView(APIView):
             return Response(ProfileSerializer(profile).data,
                             status=status.HTTP_200_OK)
         except Exception as exc:
+            traceback.print_exc()
             return Response({'detail': repr(exc)}, status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request, username=None, format=None):
@@ -51,6 +53,7 @@ class ProfileView(APIView):
             profile.save()
             return Response({'message': 'ok'}, status=status.HTTP_200_OK)
         except Exception as exc:
+            traceback.print_exc()
             return Response({'detail': repr(exc)}, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -66,6 +69,7 @@ class UsernameView(APIView):
             user.save()
             return Response({'message': 'ok'}, status=status.HTTP_200_OK)
         except Exception as exc:
+            traceback.print_exc()
             return Response({'detail': repr(exc)}, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -82,6 +86,7 @@ class PasswordView(APIView):
             user.save()
             return Response({'message': 'ok'}, status=status.HTTP_200_OK)
         except Exception as exc:
+            traceback.print_exc()
             return Response({'detail': repr(exc)}, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -96,6 +101,7 @@ class FollowListView(APIView):
             return Response(FollowListSerializer(follow_list).data,
                             status=status.HTTP_200_OK)
         except Exception as exc:
+            traceback.print_exc()
             return Response({'detail': repr(exc)}, status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request, username=None, format=None):
@@ -110,6 +116,7 @@ class FollowListView(APIView):
             follow_list.save()
             return Response({'message': 'ok'}, status=status.HTTP_200_OK)
         except Exception as exc:
+            traceback.print_exc()
             return Response({'detail': repr(exc)}, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, username=None, format=None):
@@ -124,6 +131,7 @@ class FollowListView(APIView):
             follow_list.save()
             return Response({'message': 'ok'}, status=status.HTTP_200_OK)
         except Exception as exc:
+            traceback.print_exc()
             return Response({'detail': repr(exc)}, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -142,6 +150,7 @@ class FollowedView(APIView):
                 'followed': ProfileSerializer(profiles, many=True).data
             }, status=status.HTTP_200_OK)
         except Exception as exc:
+            traceback.print_exc()
             return Response({'detail': repr(exc)}, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -158,6 +167,7 @@ class FavoritesListView(APIView):
                 post['isStarred'] = True
             return Response(result, status=status.HTTP_200_OK)
         except Exception as exc:
+            traceback.print_exc()
             return Response({'detail': repr(exc)}, status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request, username=None, format=None):
@@ -177,6 +187,7 @@ class FavoritesListView(APIView):
 
             return Response({'message': 'ok'}, status=status.HTTP_200_OK)
         except Exception as exc:
+            traceback.print_exc()
             return Response({'detail': repr(exc)}, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, username=None, format=None):
@@ -196,4 +207,5 @@ class FavoritesListView(APIView):
 
             return Response({'message': 'ok'}, status=status.HTTP_200_OK)
         except Exception as exc:
+            traceback.print_exc()
             return Response({'detail': repr(exc)}, status=status.HTTP_400_BAD_REQUEST)

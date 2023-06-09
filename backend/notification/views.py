@@ -24,6 +24,7 @@ class MessageReceivedView(APIView):
             received_messages.update(received=True)
             return Response({'message': 'ok'}, status=status.HTTP_200_OK)
         except Exception as exc:
+            traceback.print_exc()
             return Response({'detail': repr(exc)}, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -35,6 +36,7 @@ class MessageView(APIView):
             query_result = Message.objects.filter(toUser=user, received=False)
             return Response(MessageSerializer(query_result, many=True).data, status=status.HTTP_200_OK)
         except Exception as exc:
+            traceback.print_exc()
             return Response({'detail': repr(exc)}, status=status.HTTP_400_BAD_REQUEST)
 
     def post(self, request):
@@ -46,6 +48,7 @@ class MessageView(APIView):
             Message.objects.create(fromUser=fromUser, toUser=toUser, content=content)
             return Response({'message': 'ok'}, status=status.HTTP_200_OK)
         except Exception as exc:
+            traceback.print_exc()
             return Response({'detail': repr(exc)}, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -62,6 +65,7 @@ class LikeMessageReceivedView(APIView):
             received_messages.delete()
             return Response({'message': 'ok'}, status=status.HTTP_200_OK)
         except Exception as exc:
+            traceback.print_exc()
             return Response({'detail': repr(exc)}, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -91,6 +95,7 @@ class CommentMessageReceivedView(APIView):
             received_messages.delete()
             return Response({'message': 'ok'}, status=status.HTTP_200_OK)
         except Exception as exc:
+            traceback.print_exc()
             return Response({'detail': repr(exc)}, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -103,4 +108,5 @@ class CommentMessageView(APIView):
             result = CommentMessageSerializer(query_result, many=True).data
             return Response([x['comment'] for x in result], status=status.HTTP_200_OK)
         except Exception as exc:
+            traceback.print_exc()
             return Response({'detail': repr(exc)}, status=status.HTTP_400_BAD_REQUEST)
