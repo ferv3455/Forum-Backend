@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'authentication',
     'forum',
     'notification',
+    'preview',
 ]
 
 MIDDLEWARE = [

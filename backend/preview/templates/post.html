@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ title }} - 校园资讯分享平台</title>
+</head>
+<body>
+<h1>{{ title }}</h1>
+
+<div id="comment">
+  <img id="avatar" src="{{ user_profile.avatar }}">
+  <p id="datetime"><small>{{ user_profile.user.username }} - {{ createdAt }}</small></p>
+</div>
+<hr/>
+
+<p>{{ content }}</p>
+{% for image in images %}
+<img src="{{ image.content }}">
+<br/>
+{% endfor %}
+
+{% if location != None %}
+<div>
+  <div class="location">位置：{{ location }}</div>
+</div>
+{% endif %}
+
+<div>
+  {% for tag in tags %}
+  <span class="tag">#{{ tag.name }} </span>
+  {% endfor %}
+</div>
+
+</body>
+
+
+<style>
+#comment {
+  display: flex;
+  align-items: center;
+  justify-content: start;
+}
+
+#datetime {
+  margin-block-start: 0em;
+  margin-block-end: 0em;
+}
+
+#avatar {
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+}
+
+.location {
+  display: inline-block;
+  background-color: #ebc6fc;
+  border-radius: 5px;
+  padding: 4px 8px;
+  margin-top: 5px;
+}
+
+.tag {
+  display: inline-block;
+  background-color: #7719aa;
+  border-radius: 5px;
+  color: #ffffff;
+  padding: 4px 8px;
+  margin-top: 5px;
+}
+
+</style>
+</html>

@@ -23,4 +23,5 @@ urlpatterns = [
     path('auth/', include('authentication.urls')),
     path('account/', include('account.urls')),
     path('notification/', include('notification.urls')),
+    path('preview/', include('preview.urls')),
 ]
