@@ -2,6 +2,8 @@ import uuid
 
 from django.contrib.auth.models import User
 from django.db import models
+from django.db.models.signals import post_save, post_delete
+from django.dispatch import receiver
 
 
 # Create your models here.
@@ -60,3 +62,24 @@ class Comment(models.Model):
 
     def __str__(self):
         return f"<Comment: {self.user} - {self.post}>"
+
+
+@receiver(post_save, sender=Like)
+def create_like(sender, instance, created, **kwargs):
+    if created:
+        instance.post.likes += 1
+        instance.post.save()
+
+
+@receiver(post_delete, sender=Like)
+def delete_like(sender, instance, **kwargs):
+    instance.post.likes -= 1
+    instance.post.save()
+
+
+@receiver(post_save, sender=Comment)
+def create_comment(sender, instance, created, **kwargs):
+    if created:
+        instance.post.comments += 1
+        instance.post.lastCommented = instance.createdAt
+        instance.post.save()

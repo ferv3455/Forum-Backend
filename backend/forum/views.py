@@ -62,10 +62,6 @@ class PostListView(APIView):
                 query_results = query(query_results, request.GET.get('query'))
 
             # Sorting
-            # time: the time of publication
-            # comment-time: the time of the latest comment
-            # hot: the number of comments in a day's time (at least 1)
-
             sort_by = request.GET.get('sortBy', 'time')
             if sort_by == 'comments':
                 query_results = query_results.order_by('-comments')
@@ -177,8 +173,6 @@ class LikeView(APIView):
 
             post = Post.objects.get(id=id)
             Like.objects.create(user=user, post=post)
-            post.likes += 1
-            post.save()
             return Response({'message': 'ok'}, status=status.HTTP_200_OK)
         except Exception as exc:
             traceback.print_exc()
@@ -193,9 +187,6 @@ class LikeView(APIView):
                 return Response({'detail': 'Not liked by the user yet'}, status=status.HTTP_400_BAD_REQUEST)
 
             query.delete()
-            post = Post.objects.get(id=id)
-            post.likes -= 1
-            post.save()
             return Response({'message': 'ok'}, status=status.HTTP_200_OK)
         except Exception as exc:
             traceback.print_exc()
@@ -236,9 +227,6 @@ class CommentView(APIView):
             content = request.data['content']
             post = Post.objects.get(id=id)
             comment = Comment.objects.create(user=user, post=post, content=content)
-            post.lastCommented = comment.createdAt
-            post.comments += 1
-            post.save()
             return Response({'message': 'ok'}, status=status.HTTP_200_OK)
         except Exception as exc:
             traceback.print_exc()

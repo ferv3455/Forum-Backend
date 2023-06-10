@@ -1,5 +1,5 @@
 import traceback
-from operator import attrgetter
+from operator import attrgetter, itemgetter
 from uuid import UUID
 
 from django.contrib.auth.models import User
@@ -11,6 +11,7 @@ from rest_framework.views import APIView
 from authentication.models import Profile
 from authentication.serializers import ProfileSerializer, UserSerializer
 from forum.models import Post, Like
+from forum.serializers import PostSerializer
 from .models import FollowList, FavoriteList
 from .serializers import FollowListSerializer, FavoriteListSerializer
 
@@ -162,12 +163,24 @@ class FavoritesListView(APIView):
         # Get favorite list of a user
         try:
             user = get_user(request, username)
-            fav_list = FavoriteList.objects.get(user=user)
+            fav_list = FavoriteList.objects.get(user=user).favorites
+
+            sort_by = request.GET.get('sortBy', 'time')
+            if sort_by == 'comments':
+                fav_list = fav_list.order_by('-comments')
+            elif sort_by == 'likes':
+                fav_list = fav_list.order_by('-likes')
+            elif sort_by == 'comment-time':
+                fav_list = fav_list.order_by('-lastCommented')
+            else:
+                fav_list = fav_list.order_by('-createdAt')
+
             like_list = Like.objects.filter(user=request.user).values_list('post', flat=True)
-            result = FavoriteListSerializer(fav_list).data.get('favorites')
+            result = PostSerializer(fav_list, many=True).data
             for post in result:
                 post['isStarred'] = True
                 post['isLiked'] = UUID(post['id']) in like_list
+
             return Response(result, status=status.HTTP_200_OK)
         except Exception as exc:
             traceback.print_exc()
