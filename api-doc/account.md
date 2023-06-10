@@ -217,7 +217,7 @@
 > 
 > `account/favorites/<username>` GET
 
-获取用户的收藏列表，格式类似动态列表：
+获取用户的收藏列表，**同样支持`sortBy`参数**，格式类似动态列表，：
 
 ```json
 [
