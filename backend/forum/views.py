@@ -1,5 +1,8 @@
+import datetime
 import traceback
+from collections import Counter
 from uuid import UUID
+from zoneinfo import ZoneInfo
 
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -35,14 +38,23 @@ class PostListView(APIView):
                                 status=status.HTTP_401_UNAUTHORIZED)
 
         try:
-            query_results = Post.objects.all()
+            query_results = Post.objects
 
             # Filtering
             if 'user' in request.GET:
                 query_results = query_results.filter(user__username=request.GET.get('user'))
 
-            if 'following' in request.GET:
-                if request.GET.get('following', 'false') == 'true':
+            if 'filter' in request.GET:
+                filter_name = request.GET.get('filter', 'null')
+                if filter_name == 'hot':
+                    # Get comments in the past day
+                    comments = Comment.objects.filter(
+                        createdAt__gt=datetime.datetime.now(tz=ZoneInfo('Asia/Shanghai')) - datetime.timedelta(1))
+                    posts = comments.values_list('post', flat=True).all()
+                    comment_count = Counter(posts)
+                    postIds = [postId for postId, _ in comment_count.most_common(10)]
+                    query_results = query_results.filter(id__in=postIds)
+                elif filter_name == 'following':
                     follow_list = FollowList.objects.get(user=request.user)
                     query_results = query_results.filter(user__in=follow_list.following.all())
 
@@ -55,9 +67,10 @@ class PostListView(APIView):
             # hot: the number of comments in a day's time (at least 1)
 
             sort_by = request.GET.get('sortBy', 'time')
-            if sort_by == 'hot':
-                # TODO
+            if sort_by == 'comments':
                 query_results = query_results.order_by('-comments')
+            elif sort_by == 'likes':
+                query_results = query_results.order_by('-likes')
             elif sort_by == 'comment-time':
                 query_results = query_results.order_by('-lastCommented')
             else:
